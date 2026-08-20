@@ -33,6 +33,7 @@ The project demonstrates:
 Udemy_AI_project/
 ├── Jenkinsfile                    # CI/CD pipeline definition
 ├── README.md                      # This file
+├── requirements.txt               # Pinned dependencies — install with one command
 ├── .gitignore                     # Secret + Python + IDE ignores
 │
 └── Session1_Intro/
@@ -70,10 +71,21 @@ cd Udemy_AI_project
 python -m venv myenv314
 myenv314\Scripts\activate
 
-# Install dependencies
+# Install dependencies (pinned versions in requirements.txt)
 python -m pip install --upgrade pip
-python -m pip install deepeval python-dotenv openai tenacity pytest
+python -m pip install -r requirements.txt
 ```
+
+> **Why no venv in the repo?** Virtual environments are machine-specific (absolute paths, platform binaries, Python-version bindings). A clone that checked in a venv would be broken on any other machine. Instead, the repo ships the *recipe* (`requirements.txt`) so every person recreates an identical environment locally.
+
+**If you add a dependency locally**, keep `requirements.txt` in sync:
+
+```bash
+python -m pip install <new-package>
+python -m pip freeze > requirements.txt   # pins everything you installed
+```
+
+Then commit the updated `requirements.txt` — teammates and Jenkins pick it up automatically.
 
 ---
 
@@ -200,7 +212,7 @@ The `Jenkinsfile` defines three stages:
 
 | Stage           | What it does                                                    |
 | --------------- | --------------------------------------------------------------- |
-| **Setup**       | Checks Python version, upgrades pip, installs `deepeval python-dotenv openai tenacity pytest` |
+| **Setup**       | Checks Python version, upgrades pip, installs `requirements.txt` (pinned) |
 | **Unit test**   | Runs `pytest test_run_deepeval_eval.py -v` in `Session1_Intro`  |
 | **Run evaluation** | Runs `python run_deepeval_eval.py` in `Session1_Intro`      |
 
@@ -243,6 +255,11 @@ __pycache__/
 
 # IDE
 .vscode/
+
+# Tooling / runtime data
+.commandcode/
+.deepeval/
+.ipynb_checkpoints/
 ```
 
 - `.env` → ignored (real keys)

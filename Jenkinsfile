@@ -11,7 +11,7 @@ pipeline {
             steps {
                 sh 'python --version'
                 sh 'python -m pip install --upgrade pip'
-                sh 'python -m pip install deepeval python-dotenv openai tenacity pytest'
+                sh 'python -m pip install -r requirements.txt'
             }
         }
 
