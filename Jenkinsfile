@@ -4,6 +4,8 @@ pipeline {
     environment {
         OPENAI_API_KEY = credentials('OPENAI_API_KEY')
         CONFIDENT_API_KEY = credentials('CONFIDENT_API_KEY')
+        EVAL_BACKEND = 'openai'
+        PYTHONIOENCODING = 'utf-8'
     }
 
     stages {
@@ -29,6 +31,18 @@ pipeline {
                     sh 'python run_deepeval_eval.py'
                 }
             }
+        }
+
+        stage('RAG evals') {
+            steps {
+                bat 'myenv314\\Scripts\\python.exe -m pytest -m testRag --junitxml=results.xml --html=report.html --self-contained-html'
+            }
+        }
+    }
+
+    post {
+        always {
+            junit 'results.xml'
         }
     }
 }
