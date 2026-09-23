@@ -14,6 +14,9 @@ On Windows PowerShell, if you see a UnicodeEncodeError from emoji output, set:
 
 The pass/fail gate is pytest's exit code: `assert_test` raises AssertionError
 when a metric fails, which pytest turns into a failed test (non-zero exit).
+
+After the run, conftest.py uploads the collected results to the Confident AI
+dashboard (requires CONFIDENT_API_KEY; a missing key only warns locally).
 """
 
 import os
@@ -29,6 +32,7 @@ from deepeval import assert_test
 from deepeval.metrics import GEval
 from deepeval.models import OllamaModel, OpenAIModel
 from deepeval.test_case import LLMTestCase, SingleTurnParams
+from deepeval.test_run import log_hyperparameters
 
 # Shared .env lives in Session1_Intro (single source of truth for secrets).
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -49,12 +53,23 @@ if BACKEND == "openai" and not os.getenv("OPENAI_API_KEY"):
 
 # CONFIDENT_API_KEY only uploads results to the Confident AI dashboard.
 # The CI gate is the pytest exit code, so a missing key must not fail the run.
+# The actual upload happens in conftest.py (pytest_sessionfinish hook).
 if not os.getenv("CONFIDENT_API_KEY"):
     warnings.warn(
         "CONFIDENT_API_KEY is missing. Results will not be uploaded to Confident AI.",
         RuntimeWarning,
         stacklevel=2,
     )
+
+
+@log_hyperparameters
+def hyperparameters():
+    """Model/backend attributes shown on the Confident AI test run."""
+    return {
+        "Backend": BACKEND,
+        "App Model": OLLAMA_APP_MODEL if BACKEND == "ollama" else OPENAI_APP_MODEL,
+        "Judge Model": OLLAMA_JUDGE_MODEL if BACKEND == "ollama" else OPENAI_JUDGE_MODEL,
+    }
 
 
 def _build_app_llm():

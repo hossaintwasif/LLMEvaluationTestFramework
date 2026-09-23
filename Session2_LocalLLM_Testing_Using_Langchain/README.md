@@ -4,6 +4,8 @@ This folder contains the pytest suite that evaluates LLM answers with
 DeepEval's GEval "Correctness" metric (LLM-as-judge).
 
 - `test_rag_eval.py` — the test suite (tagged: `testRag`, `correctness`)
+- `conftest.py` — pytest hook that uploads the collected results to the
+  Confident AI dashboard when the run finishes (needs `CONFIDENT_API_KEY`)
 - `results.xml` — JUnit XML report for Jenkins (machine-readable)
 - `report.html` — visual HTML report for humans (open in a browser)
 
@@ -119,6 +121,10 @@ pipeline {
 
 The CI gate is the pytest exit code: a failing metric raises an
 `AssertionError` inside `assert_test`, so a failed eval = failed build.
+The same run is also uploaded to the Confident AI dashboard via the
+`pytest_sessionfinish` hook in `conftest.py` (the `CONFIDENT_API_KEY`
+Jenkins credential enables it; an upload failure never changes the
+build's exit code).
 
 ## Troubleshooting
 
